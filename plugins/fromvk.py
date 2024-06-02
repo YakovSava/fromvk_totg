@@ -1,22 +1,40 @@
-from asyncio import gather, create_task
+from asyncio import gather, create_task, sleep
 from aiohttp import ClientSession
 from aiofiles import open as aiopen
 from vkbottle.user import User
+
+from plugins.binder import Binder
 
 class UserBotError(Exception): pass
 
 class UserBot:
 
-    def __init__(self, token:str=None):
+    def __init__(self, token:str=None, config_getter:Binder=None):
         if token is None:
-            raise UserBotError("Токен не найден")
+            raise UserBotError("Токен не найден!")
+        if config_getter is None:
+            raise UserBotError("Класс Binder не найден!")
         self._bot = User(token=token)
+        self._binder = config_getter
 
     async def worker(self):
-        pass
+        while True:
+            config = await self._binder.get_config()
+            for domain in config['domains']:
+                await self._work(domain)
 
-    async def _get_wall(self, id:int):
-        pass
+    async def _work(self, dom:str):
+        data = self._get_wall(dom)
+
+
+    async def _get_wall(self, dom:str):
+        wall_data = await self._bot.api.wall.get(
+            domain=dom
+        )
+        # ...
+        return {
+            "text": wall_data.
+        }
 
     async def _write_temp(self, urls:list[str]):
         async def _internal(num, url):
@@ -33,4 +51,4 @@ class UserBot:
     async def _get_photo(self, url:str) -> bytes:
         async with ClientSession() as session:
             async with session.get(url) as resp:
-                return resp.content
+                return await resp.read()

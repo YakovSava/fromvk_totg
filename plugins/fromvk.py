@@ -31,9 +31,10 @@ class UserBot:
         wall_data = await self._bot.api.wall.get(
             domain=dom
         )
-        # ...
+        print(wall_data)
         return {
-            "text": wall_data.
+            "text": wall_data,
+            "photos": ...
         }
 
     async def _write_temp(self, urls:list[str]):
@@ -52,3 +53,6 @@ class UserBot:
         async with ClientSession() as session:
             async with session.get(url) as resp:
                 return await resp.read()
+
+if __name__ == '__main__':
+    ub = UserBot()

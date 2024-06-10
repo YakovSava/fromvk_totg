@@ -1,34 +1,58 @@
+from os import remove
+from asyncio import gather, create_task, run
 from aiogram import Bot
-from aiogram.types import Message
+from aiogram.types import FSInputFile
+from aiogram.utils.media_group import MediaGroupBuilder
 
-from plugins.binder import ConfigBinder
+from plugins.binder import Binder
 
-class TelegramError(Exception): pass
+class TGBotError(Exception): pass
 
-class TelegramSender:
+class TGBot:
 
-	def __init__(self, bot:Bot=None, token:str=None, config_binder:ConfigBinder=None):
-		if (token is None) and (bot is None):
-			raise TelegramError("Укажите бота или токен!")
-		elif (token is None):
-			self._bot = bot
-		elif (bot is None):
-			self._bot = Bot(token=token)
-		if config_binder is None:
-			raise TelegramError("Укажите конфигурационный связыватель!")
-		self._cb = config_binder
+	def __init__(self, token:str=None, config:Binder=None):
+		if token is None:
+			raise TGBotError("Token not found!")
+		if config is None:
+			raise TGBotError("Config binder not found!")
+		self._bot = Bot(token=token)
+		self._config = config
 
-	async def add_new_group_to_repost(self, new_domain:str) -> str:
-		if (await self._cb.add_new_domain(new_domain)):
-			return "Успешно!"
+	async def post(self, text:str, photos:list=[]) -> None:
+		config = await self._config.get_config()
+		if len(photos) == 0:
+			await self._bot.send_message(
+				chat_id=config['channel_id'],
+				text=text
+			)
+		elif len(photos) == 1:
+			await self._bot.send_photo(
+				chat_id=config['channel_id'],
+				photo=(await self._download_photo(photos[0])),
+				caption=text
+			)
+			await self._remove_photo(photos[0])
 		else:
-			return "Похоже данная запись уже есть!"
+			mediagroup = MediaGroupBuilder(caption=text)
+			for photo in photos:
+				mediagroup.add(
+					type="photo",
+					media=(await self._download_photo(photo))
+				)
+			await self._bot.send_media_group(
+				chat_id=config['channel_id'],
+				media=mediagroup.build()
+			)
+			await gather(
+				*[create_task(self._remove_photo(photo)) for photo in photos]
+			)
 
-	async def remove_group_from_reposts(self, old_domain:str) -> None:
-		if (await self._cb.del_new_group(old_domain)):
-			return "Успешно!"
-		else:
-			return "Похоже данной записи не было!"
+	async def _download_photo(self, photo_path:str) -> FSInputFile:
+		return FSInputFile(path=photo_path)
 
-	async def post(self, text:str, photos:str) -> bool:
-		pass
+	async def _remove_photo(self, photo_path:str) -> None:
+		remove(photo_path)
+
+if __name__ == '__main__':
+	tg = TGBot(token=open('tested_token.txt', 'r', encoding='utf-8').read(), config=Binder('configuration.json'))
+	run(tg.post("Тестовый текст!", ["./vwehr3710.jpg", "./odsryjxawitnp4201.jpg"]))

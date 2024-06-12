@@ -62,7 +62,7 @@ class UserBot:
         return {
             'text': data['text'],
             'photos': photos_name,
-            'ids': ids
+            'ids': data['ids']
         }
 
     async def _get_wall(self, dom:str):
@@ -95,7 +95,7 @@ class UserBot:
             return f"./temp/{name}.jpg"
 
         if len(urls) == 0:
-            retrun []
+            return []
         else:
             return await gather(
             *[create_task(_internal(url)) for url in urls]

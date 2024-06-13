@@ -15,18 +15,23 @@ class TGBot:
 			raise TGBotError("Token not found!")
 		if config is None:
 			raise TGBotError("Config binder not found!")
-		self._bot = Bot(token=token)
+		self.bot = Bot(token=token)
 		self._config = config
 
 	async def post(self, text:str, photos:list=[]) -> None:
+		if len(text) > 1024:
+			await gather(
+				*[create_task(self._remove_photo(photo)) for photo in photos]
+			)
+			return
 		config = await self._config.get_config()
 		if len(photos) == 0:
-			await self._bot.send_message(
+			await self.bot.send_message(
 				chat_id=config['channel_id'],
 				text=text
 			)
 		elif len(photos) == 1:
-			await self._bot.send_photo(
+			await self.bot.send_photo(
 				chat_id=config['channel_id'],
 				photo=(await self._download_photo(photos[0])),
 				caption=text
@@ -39,7 +44,7 @@ class TGBot:
 					type="photo",
 					media=(await self._download_photo(photo))
 				)
-			await self._bot.send_media_group(
+			await self.bot.send_media_group(
 				chat_id=config['channel_id'],
 				media=mediagroup.build()
 			)

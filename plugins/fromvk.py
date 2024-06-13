@@ -19,7 +19,7 @@ async def saveids(ids:list[str]) -> None:
 
 async def getids() -> list[str]:
     try:
-        async with aiopen('saveids.list', 'r', encoding='utf-8') as file:
+        async with aiopen('savedids.list', 'r', encoding='utf-8') as file:
             return eval(await file.read())
     except:
         return []
@@ -76,8 +76,10 @@ class UserBot:
             if f'{all_data.from_id}_{all_data.id}' not in self._ids:
                 texts.append(all_data.text)
                 for photo in all_data.attachments:
+                    lc_ph = []
                     if photo.photo is not None:
-                        photos.append(photo.photo.sizes[-1].url)
+                        lc_ph.append(photo.photo.sizes[-1].url)
+                    photos.append(lc_ph)
                 ids.append(f'{all_data.from_id}_{all_data.id}')
         return {
             "text": texts,

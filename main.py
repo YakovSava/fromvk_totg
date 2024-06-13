@@ -107,7 +107,7 @@ async def do_work():
 			else:
 				data['texts'][text_index] = replace_word(data['texts'][text_index], filters_config['replace'])
 		for text, photos in zip(data['texts'], data['photos']):
-			await shed.add_to_queue([text, [photos]])
+			await shed.add_to_queue([text, photos])
 		await sleep(startup_config['timeout'])
 
 async def start():
@@ -117,6 +117,10 @@ async def start():
 		create_task(shed.worker(tgbot.post)),
 		create_task(dp.start_polling(tgbot.bot))
 	)
+
+async def test_vk():
+	data = await vkbot.worker()
+	print(data)
 
 if __name__ == '__main__':
 	run(start())

@@ -1,7 +1,10 @@
 print('Начало импортов')
-from asyncio import gather, create_task, run, sleep
 
-from plugins.binder import Binder
+from asyncio import gather, create_task, run, sleep
+from aiogram import Dispatcher, F 
+from aiogram.typees import Message
+
+from plugins.binder import Binder, FilterBinder, VKBinder
 from plugins.totg import TGBot
 from plugins.fromvk import UserBot
 from plugins.middleware import check_to_stop, replace_word
@@ -10,8 +13,8 @@ from plugins.sheduler import AsyncSheduler
 print('Импорты завершены. Начало инциализации...')
 
 def_binder = Binder("config.json")
-filter_binder = Binder("filters.json")
-vkbind = Binder("vkontakte.json")
+filter_binder = FilterBinder("filters.json")
+vkbind = VKBinder("vkontakte.json")
 tgbind = Binder("telegram.json")
 vkbot = UserBot(
 	token=vkbind.sync_get_config()['token'],
@@ -29,6 +32,45 @@ with open(startup_config['queue'], 'r', encoding='utf-8') as file:
 		queue_filename=startup_config['queue']
 	)
 print('Инциализация завершена')
+
+@dp.message_handler(F.text.lower().startswith('правило'))
+async def add_new_rule(message:Message):
+	msg = 'Неизвестная команда. Искомая команда:\n\n\
+Правило [удалить/добавить] [стоп/фильтр] [стоп_слово ИЛИ фильтр_заменяемое фильтр_замеить_на]\n\n\
+Пример:\n\
+Правило добавить фильтр кирпич бетон\n\
+Правило добавить стоп Реклама\n\
+Правило добавить фильтр ванна баня'
+	parts = message.text.lower().split(maxsplit=3)
+	if message.from_id in tgbind['admins']:
+		if parts[1] == 'добавить':
+			if parts[2] == 'стоп':
+				if (await filter_binder.new_stop(parts[3])):
+					await message.answer('Успешно!')
+				else:
+					await message.answer('Не успешно! Возможно, данное слово уже существует')
+			elif parts[2] == 'фильтр':
+				if (await filter_binder.del_stop(parts[3])):
+					await message.answer('Успешно!')
+				else:
+					await message.answer('Не успешно! Возможно, данного слова и так нет!')
+			else:
+				await message.answer(msg)
+		elif parts[1] == 'удалить':
+			if parts[2] == 'стоп':
+				if (await filter_binder.new_repl(parts[3].split())):
+					await message.answer('Успешно!')
+				else:
+					await message.answer('Не успешно! Возможно, данная замена уже существует')
+			elif parts[2] == 'фильтр':
+				if (await filter_binder.del_repl(parts[3].split())):
+					await message.answer('Успешно!')
+				else:
+					await message.answer('Не успешно! Возможно, данной замены и так нет!')
+			else:
+				await message.answer(msg)
+		else:
+			await message.answer(msg)
 
 async def do_work():
 	while True:

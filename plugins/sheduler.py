@@ -1,4 +1,5 @@
 from asyncio import sleep, gather, create_task
+from random import shuffle
 from typing import Coroutine
 from aiofiles import open as aiopen
 
@@ -14,6 +15,7 @@ class AsyncSheduler:
 			if len(self._q) == 0:
 				await sleep(60)
 			else:
+				shuffle(self._q)
 				await func(*self._q[0])
 				await self._remove_from_queue(index=0)
 				await sleep(self._timeout)

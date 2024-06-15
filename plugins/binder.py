@@ -72,6 +72,11 @@ class FilterBinder(Binder):
         await self._set_config(conf)
         return to_ret
 
+    async def add_end(self, end:str) -> None:
+        conf = await self.get_config()
+        conf['end'] = end
+        await self._set_config(conf)
+
 
 class VKBinder(Binder):
 

@@ -6,8 +6,14 @@ def check_to_stop(text:str, stop:list[str]) -> bool:
             return True
     return False
 
-def replace_word(text:str, word_repl:list[list[str], list[str]]) -> str:
-    for word, repl_to in word_repl:
-    	pattern = r'\b\W*('+word+r'+)\W*\b'
-    	text = re.sub(pattern, repl_to, text)
+def replace_word(text:str, word_list:list[list[str]]) -> str:
+    for repl1 in word_list:
+        try:
+            word_dict = {repl1[0]: repl1[1]}
+            
+            pattern = re.compile(r'\b(?:{})\b'.format('|'.join(word_dict.keys())), re.IGNORECASE)
+            text = pattern.sub(lambda match: word_dict[match.group(0)], text)
+        except:
+            pass
+    
     return text

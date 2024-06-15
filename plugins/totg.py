@@ -20,10 +20,12 @@ class TGBot:
 
 	async def post(self, text:str, photos:list=[]) -> None:
 		if len(text) > 1024:
+			print(text, photos)
 			await gather(
 				*[create_task(self._remove_photo(photo)) for photo in photos]
 			)
 			return
+		print(text, photos)
 		config = await self._config.get_config()
 		if len(photos) == 0:
 			await self.bot.send_message(

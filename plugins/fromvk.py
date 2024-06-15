@@ -49,21 +49,12 @@ class UserBot:
         }
         config = await self._binder.get_config()
         for domain in config['domains']:
-            data = await self._work(domain)
+            data = await self._get_wall(domain)
             self._ids.extend(data['ids'])
             all_data['texts'].extend(data['text'])
             all_data['photos'].extend(data['photos'])
         await saveids(self._ids)
         return all_data
-
-    async def _work(self, dom:str):
-        data = await self._get_wall(dom)
-        photos_name = await self._write_temp(data['photos'])
-        return {
-            'text': data['text'],
-            'photos': photos_name,
-            'ids': data['ids']
-        }
 
     async def _get_wall(self, dom:str):
         wall_data = await self._bot.api.wall.get(
@@ -75,11 +66,12 @@ class UserBot:
         for all_data in wall_data.items:
             if f'{all_data.from_id}_{all_data.id}' not in self._ids:
                 texts.append(all_data.text)
+                lc_ph = []
                 for photo in all_data.attachments:
-                    lc_ph = []
                     if photo.photo is not None:
                         lc_ph.append(photo.photo.sizes[-1].url)
-                    photos.append(lc_ph)
+                photos.append(await self._write_temp(lc_ph))
+                # print(texts[-1]+"\n\n")
                 ids.append(f'{all_data.from_id}_{all_data.id}')
         return {
             "text": texts,
@@ -95,7 +87,7 @@ class UserBot:
                     await self._get_photo(url)
                 )
             return f"./temp/{name}.jpg"
-
+        # print(urls)
         if len(urls) == 0:
             return []
         else:

@@ -3,9 +3,7 @@ config.json
 vkontakte.json
 telegram.json
 secrets.json
-tested_token.txt
-tokenvk.txt
-aiogram_env/
-vkbottle_env/
 queue.list
 saveids.list
+temp
+__pycache__

@@ -64,15 +64,22 @@ class UserBot:
         photos = []
         ids = []
         for all_data in wall_data.items:
-            if f'{all_data.from_id}_{all_data.id}' not in self._ids:
+            if (f'{all_data.from_id}_{all_data.id}' not in self._ids):
+                video = False
                 texts.append(all_data.text)
                 lc_ph = []
-                for photo in all_data.attachments:
-                    if photo.photo is not None:
-                        lc_ph.append(photo.photo.sizes[-1].url)
+                for attach in all_data.attachments:
+                    if attach.video is not None:
+                        texts.pop()
+                        video = True
+                        break
+                    elif attach.photo is not None:
+                        lc_ph.append(attach.photo.sizes[-1].url)
+                ids.append(f'{all_data.from_id}_{all_data.id}')
+                if video:
+                    continue
                 photos.append(await self._write_temp(lc_ph))
                 # print(texts[-1]+"\n\n")
-                ids.append(f'{all_data.from_id}_{all_data.id}')
         return {
             "text": texts,
             "photos": photos,

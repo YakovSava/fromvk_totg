@@ -17,15 +17,18 @@ class TGBot:
 			raise TGBotError("Config binder not found!")
 		self.bot = Bot(token=token)
 		self._config = config
+		self._end = ""
+
+	async def set_end(self, end:str) -> None:
+		self._end = end
 
 	async def post(self, text:str, photos:list=[]) -> None:
+		text += "\n"+self._end
 		if len(text) > 1024:
-			print(text, photos)
 			await gather(
 				*[create_task(self._remove_photo(photo)) for photo in photos]
 			)
 			return
-		print(text, photos)
 		config = await self._config.get_config()
 		if len(photos) == 0:
 			await self.bot.send_message(

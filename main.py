@@ -129,7 +129,8 @@ async def do_work():
 			else:
 				data['texts'][text_index] = replace_word(data['texts'][text_index], filters_config['replace'])
 		for text, photos in zip(data['texts'], data['photos']):
-			await shed.add_to_queue([text+"\n"+filters_config['end'], photos])
+			await shed.add_to_queue([text, photos])
+		await tgbot.set_end(filters_config['end'])
 		await sleep(startup_config['timeout'])
 
 async def start():

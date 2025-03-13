@@ -1,6 +1,5 @@
-print('Начало импортов')
-
 from asyncio import gather, create_task, run, sleep
+
 from aiogram import Dispatcher, F
 from aiogram.types import Message
 from aiogram.enums import ParseMode
@@ -10,8 +9,6 @@ from plugins.totg import TGBot
 from plugins.fromvk import UserBot
 from plugins.middleware import check_to_stop, replace_word
 from plugins.sheduler import AsyncSheduler
-
-print('Импорты завершены. Начало инциализации...')
 
 def_binder = Binder("config.json")
 filter_binder = FilterBinder("filters.json")
@@ -33,7 +30,6 @@ with open(startup_config['queue'], 'r', encoding='utf-8') as file:
         queue_filename=startup_config['queue']
     )
 dp = Dispatcher()
-print('Инциализация завершена')
 
 
 @dp.message(F.text.lower().startswith('правило'))

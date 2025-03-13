@@ -1,11 +1,13 @@
 from json import loads, dumps
 from aiofiles import open as aiopen
 
+
 class BinderError(Exception): pass
+
 
 class Binder:
 
-    def __init__(self, config_filename:str):
+    def __init__(self, config_filename: str):
         self._filename = config_filename
 
     async def get_config(self):
@@ -16,14 +18,14 @@ class Binder:
         with open(self._filename, 'r', encoding='utf-8') as file:
             return loads(file.read())
 
-    async def _set_config(self, new_config:dict) -> None:
+    async def _set_config(self, new_config: dict) -> None:
         async with aiopen(self._filename, 'w', encoding='utf-8') as file:
             await file.write(dumps(new_config))
 
 
 class FilterBinder(Binder):
 
-    async def new_stop(self, stop:str) -> bool:
+    async def new_stop(self, stop: str) -> bool:
         conf = await self.get_config()
         try:
             conf['stop'].index(stop)
@@ -35,7 +37,7 @@ class FilterBinder(Binder):
         await self._set_config(conf)
         return to_ret
 
-    async def del_stop(self, stop:str) -> bool:
+    async def del_stop(self, stop: str) -> bool:
         conf = await self.get_config()
         try:
             conf['stop'].index(stop)
@@ -47,7 +49,7 @@ class FilterBinder(Binder):
         await self._set_config(conf)
         return to_ret
 
-    async def new_repl(self, replace:list[str]) -> bool:
+    async def new_repl(self, replace: list[str]) -> bool:
         # Replace arg is: [replace, replace to]
         conf = await self.get_config()
         try:
@@ -60,7 +62,7 @@ class FilterBinder(Binder):
         await self._set_config(conf)
         return to_ret
 
-    async def del_repl(self, replace:list[str]) -> bool:
+    async def del_repl(self, replace: list[str]) -> bool:
         conf = await self.get_config()
         try:
             conf['replace'].index(replace)
@@ -72,7 +74,7 @@ class FilterBinder(Binder):
         await self._set_config(conf)
         return to_ret
 
-    async def add_end(self, end:str) -> None:
+    async def add_end(self, end: str) -> None:
         conf = await self.get_config()
         conf['end'] = end
         await self._set_config(conf)
@@ -80,7 +82,7 @@ class FilterBinder(Binder):
 
 class VKBinder(Binder):
 
-    async def new_domain(self, domain:str) -> bool:
+    async def new_domain(self, domain: str) -> bool:
         conf = await self.get_config()
         try:
             conf['domains'].index(domain)
@@ -92,7 +94,7 @@ class VKBinder(Binder):
         await self._set_config(conf)
         return to_ret
 
-    async def del_domain(self, domain:str) -> bool:
+    async def del_domain(self, domain: str) -> bool:
         conf = await self.get_config()
         try:
             conf['domains'].index(domain)
